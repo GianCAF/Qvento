@@ -1,4 +1,5 @@
-create extension if not exists pgcrypto;
+create schema if not exists extensions;
+create extension if not exists pgcrypto with schema extensions;
 
 create type public.user_role as enum ('superadmin', 'admin', 'receptionist');
 create type public.event_status as enum ('draft', 'active', 'completed', 'cancelled');
@@ -168,8 +169,8 @@ declare generated_token text; target_event uuid;
 begin
   select g.event_id into target_event from public.guests g where g.id = p_guest_id;
   if target_event is null or not public.can_manage_event(target_event) then raise exception 'not_authorized'; end if;
-  generated_token := encode(gen_random_bytes(32), 'hex');
-  update public.guests set invitation_token_hash = encode(digest(generated_token, 'sha256'), 'hex'), is_revoked = false
+  generated_token := encode(extensions.gen_random_bytes(32), 'hex');
+  update public.guests set invitation_token_hash = encode(extensions.digest(generated_token, 'sha256'), 'hex'), is_revoked = false
   where id = p_guest_id;
   return query select generated_token, p_guest_id, target_event;
 end;
@@ -186,7 +187,7 @@ language sql stable security definer set search_path = '' as $$
     e.event_description, e.invitation_message, e.invitation_theme,
     case when g.is_revoked then 'revoked' when g.archived then 'used' else 'available' end
   from public.guests g join public.events e on e.id = g.event_id
-  where g.invitation_token_hash = encode(digest(p_token, 'sha256'), 'hex')
+  where g.invitation_token_hash = encode(extensions.digest(p_token, 'sha256'), 'hex')
     and length(p_token) = 64 and e.status <> 'cancelled'
 $$;
 
@@ -199,7 +200,7 @@ begin
     return query select null::uuid, null::text, 'unauthorized'::text; return;
   end if;
   select g.* into known from public.guests g where g.event_id = p_event_id
-    and g.invitation_token_hash = encode(digest(p_token, 'sha256'), 'hex');
+    and g.invitation_token_hash = encode(extensions.digest(p_token, 'sha256'), 'hex');
   resolved := case when known.id is null then 'invalid' when known.is_revoked then 'revoked' when known.archived then 'used' else 'available' end;
   insert into public.check_in_logs(event_id, guest_id, receptionist_id, result)
   values (p_event_id, known.id, auth.uid(), (case resolved when 'available' then 'prevalidated' else resolved end)::public.check_in_result);
@@ -216,7 +217,7 @@ begin
     return query select null::uuid, null::text, 'unauthorized'::text, null::timestamptz; return;
   end if;
   update public.guests g set archived = true, checked_in_at = now(), checked_in_by = auth.uid()
-  where g.event_id = p_event_id and g.invitation_token_hash = encode(digest(p_token, 'sha256'), 'hex')
+  where g.event_id = p_event_id and g.invitation_token_hash = encode(extensions.digest(p_token, 'sha256'), 'hex')
     and g.archived = false and g.is_revoked = false
   returning g.* into claimed;
   if claimed.id is not null then
@@ -225,7 +226,7 @@ begin
     return query select claimed.id, claimed.full_name, 'confirmed'::text, claimed.checked_in_at; return;
   end if;
   select g.* into known from public.guests g where g.event_id = p_event_id
-    and g.invitation_token_hash = encode(digest(p_token, 'sha256'), 'hex');
+    and g.invitation_token_hash = encode(extensions.digest(p_token, 'sha256'), 'hex');
   if known.id is null then
     insert into public.check_in_logs(event_id, guest_id, receptionist_id, result) values (p_event_id, null, auth.uid(), 'invalid');
     return query select null::uuid, null::text, 'invalid'::text, null::timestamptz;
