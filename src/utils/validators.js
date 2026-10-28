@@ -15,6 +15,14 @@ export function optionalText(value, max = 1000) {
   return normalized || null
 }
 
+export function boundedInteger(value, label, min = 1, max = 99) {
+  const number = Number(value)
+  if (!Number.isInteger(number) || number < min || number > max) {
+    throw new Error(`${label} debe ser un número entero entre ${min} y ${max}.`)
+  }
+  return number
+}
+
 export function safeReturnPath(path) {
   return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') ? path : '/'
 }

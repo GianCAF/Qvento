@@ -7,7 +7,7 @@ export async function listGuests(eventId, options = {}) {
   const search = String(options.search ?? '').trim().replace(/[\\%_]/g, '\\$&')
   let query = requireSupabase()
     .from('guests')
-    .select('id, event_id, full_name, email, phone, archived, is_revoked, checked_in_at, checked_in_by, created_at', { count: 'exact' })
+    .select('id, event_id, full_name, email, phone, party_size, archived, is_revoked, checked_in_at, checked_in_by, created_at', { count: 'exact' })
     .eq('event_id', eventId)
     .order('full_name', { ascending: options.sort !== 'desc' })
     .range(from, from + pageSize - 1)
@@ -18,7 +18,7 @@ export async function listGuests(eventId, options = {}) {
 }
 
 export async function createGuest(payload) {
-  return unwrap(await requireSupabase().from('guests').insert(payload).select('id, event_id, full_name, email, phone, archived, is_revoked, created_at').single())
+  return unwrap(await requireSupabase().from('guests').insert(payload).select('id, event_id, full_name, email, phone, party_size, archived, is_revoked, created_at').single())
 }
 
 export async function createGuests(payloads) {
@@ -26,7 +26,7 @@ export async function createGuests(payloads) {
 }
 
 export async function updateGuest(id, changes) {
-  const safe = Object.fromEntries(Object.entries(changes).filter(([key]) => ['full_name', 'email', 'phone', 'is_revoked'].includes(key)))
+  const safe = Object.fromEntries(Object.entries(changes).filter(([key]) => ['full_name', 'email', 'phone', 'party_size', 'is_revoked'].includes(key)))
   return unwrap(await requireSupabase().from('guests').update(safe).eq('id', id).select().single())
 }
 

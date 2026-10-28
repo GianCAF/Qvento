@@ -4,7 +4,7 @@ import { ANIMATED_BACKGROUND_PRESETS, BACKGROUND_PRESETS, DEFAULT_INVITATION_MES
 import { renderInvitationMessage, invitationVariables } from '../utils/template-engine.js'
 import { applyTheme, buildBackgroundDesign, sanitizeTheme } from '../utils/theme-manager.js'
 import { invitationUrl } from '../utils/qr-utils.js'
-import { requiredText, optionalText } from '../utils/validators.js'
+import { boundedInteger, requiredText, optionalText } from '../utils/validators.js'
 import { parseGuestsCsv } from '../utils/csv.js'
 import { renderDropCap } from '../utils/editorial-text.js'
 import { renderAnimatedBackground } from '../components/animated-background.js'
@@ -33,7 +33,8 @@ function guestRow(guest, refresh) {
   const info = document.createElement('div')
   const name = document.createElement('p'); name.className = 'font-bold'; name.textContent = guest.full_name
   const contact = document.createElement('p'); contact.className = 'text-sm text-slate-500'; contact.textContent = guest.email || guest.phone || 'Sin contacto'
-  info.append(name, contact)
+  const capacity = document.createElement('p'); capacity.className = 'text-sm text-slate-500'; capacity.textContent = `Pase para ${guest.party_size} ${guest.party_size === 1 ? 'persona' : 'personas'}`
+  info.append(name, contact, capacity)
   const state = document.createElement('span'); state.className = `status status-${guest.is_revoked ? 'revoked' : guest.archived ? 'used' : 'available'}`; state.textContent = guest.is_revoked ? 'Revocado' : guest.archived ? 'Utilizado' : 'Disponible'
   const actions = document.createElement('div'); actions.className = 'flex flex-wrap items-center gap-2'
   const edit = Object.assign(document.createElement('button'), { className: 'button-small', textContent: 'Editar' })
@@ -43,7 +44,10 @@ function guestRow(guest, refresh) {
   edit.addEventListener('click', () => {
     const form = document.createElement('form'); form.className = 'grid gap-3'
     ;[['full_name', 'Nombre', guest.full_name], ['email', 'Correo', guest.email || ''], ['phone', 'Teléfono', guest.phone || '']].forEach(([key, label, value]) => { const field = document.createElement('label'); field.className = 'field'; field.textContent = label; const input = document.createElement('input'); input.name = key; input.value = value; field.append(input); form.append(field) })
-    createModal({ title: 'Editar invitado', content: form, confirmLabel: 'Guardar', onConfirm: async () => { const data = Object.fromEntries(new FormData(form)); await updateGuest(guest.id, { full_name: requiredText(data.full_name, 'El nombre', 160), email: optionalText(data.email, 254), phone: optionalText(data.phone, 30) }); showToast('Invitado actualizado.', 'success'); await refresh() } })
+    const capacityField = document.createElement('label'); capacityField.className = 'field'; capacityField.textContent = 'Personas incluidas en el pase'
+    const capacityInput = document.createElement('input'); capacityInput.name = 'party_size'; capacityInput.type = 'number'; capacityInput.min = '1'; capacityInput.max = '99'; capacityInput.required = true; capacityInput.value = String(guest.party_size)
+    capacityField.append(capacityInput); form.append(capacityField)
+    createModal({ title: 'Editar invitado', content: form, confirmLabel: 'Guardar', onConfirm: async () => { const data = Object.fromEntries(new FormData(form)); await updateGuest(guest.id, { full_name: requiredText(data.full_name, 'El nombre', 160), email: optionalText(data.email, 254), phone: optionalText(data.phone, 30), party_size: boundedInteger(data.party_size, 'La cantidad de personas') }); showToast('Invitado actualizado.', 'success'); await refresh() } })
   })
   revoke.addEventListener('click', async () => { try { await updateGuest(guest.id, { is_revoked: !guest.is_revoked }); showToast('Estado actualizado.', 'success'); await refresh() } catch (cause) { showToast(cause.message, 'error') } })
   actions.append(state, edit, generate, revoke); row.append(info, actions); return row
@@ -212,7 +216,7 @@ export async function eventDetailPage(id) {
   const layout = document.createElement('div'); layout.className = 'mt-8 grid gap-6 xl:grid-cols-[1.1fr_.9fr]'; section.append(layout)
   const guestsCard = document.createElement('article'); guestsCard.className = 'card'
   guestsCard.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-bold">Invitados</h2><p class="text-sm text-slate-500">Emite enlaces individuales y controla su estado.</p></div><label class="button-secondary cursor-pointer">Importar CSV<input class="sr-only" type="file" accept=".csv,text/csv" data-csv></label></div>
-    <form class="mt-6 grid gap-3 sm:grid-cols-2" data-guest-form><label class="field">Nombre<input name="full_name" required maxlength="160"></label><label class="field">Correo<input name="email" type="email"></label><label class="field">Teléfono<input name="phone" type="tel"></label><div class="flex items-end"><button class="button-primary w-full" type="submit">Agregar invitado</button></div><p class="form-error sm:col-span-2"></p></form>
+    <form class="mt-6 grid gap-3 sm:grid-cols-2" data-guest-form><label class="field">Nombre<input name="full_name" required maxlength="160"></label><label class="field">Correo<input name="email" type="email"></label><label class="field">Teléfono<input name="phone" type="tel"></label><label class="field">Personas incluidas en el pase<input name="party_size" type="number" min="1" max="99" value="1" required></label><div class="flex items-end"><button class="button-primary w-full" type="submit">Agregar invitado</button></div><p class="form-error sm:col-span-2"></p></form>
     <div class="guest-list-toolbar mt-7"><label class="field guest-search">Buscar por nombre o apellido<input type="search" data-guest-search placeholder="Ej. Ana Pérez" autocomplete="off"></label><label class="field">Orden<select data-guest-sort><option value="asc">A–Z</option><option value="desc">Z–A</option></select></label><label class="field">Mostrar<select data-guest-size><option value="10">10</option><option value="25">25</option></select></label></div>`
   const list = document.createElement('div'); list.className = 'mt-6 grid gap-3'; guestsCard.append(list)
   const pagination = document.createElement('div'); pagination.className = 'guest-pagination mt-4'
@@ -249,7 +253,7 @@ export async function eventDetailPage(id) {
   nextPage.addEventListener('click', async () => { guestState.page += 1; await refreshGuests() })
   guestsCard.querySelector('form').addEventListener('submit', async (submitEvent) => {
     submitEvent.preventDefault(); const form = submitEvent.currentTarget
-    try { const data = Object.fromEntries(new FormData(form)); await createGuest({ event_id: id, full_name: requiredText(data.full_name, 'El nombre', 160), email: optionalText(data.email, 254), phone: optionalText(data.phone, 30) }); form.reset(); guestState.page = 1; showToast('Invitado agregado.', 'success'); await refreshGuests() } catch (cause) { form.querySelector('.form-error').textContent = cause.message }
+    try { const data = Object.fromEntries(new FormData(form)); await createGuest({ event_id: id, full_name: requiredText(data.full_name, 'El nombre', 160), email: optionalText(data.email, 254), phone: optionalText(data.phone, 30), party_size: boundedInteger(data.party_size, 'La cantidad de personas') }); form.reset(); form.party_size.value = '1'; guestState.page = 1; showToast('Invitado agregado.', 'success'); await refreshGuests() } catch (cause) { form.querySelector('.form-error').textContent = cause.message }
   })
   guestsCard.querySelector('[data-csv]').addEventListener('change', async (changeEvent) => { const file = changeEvent.target.files[0]; if (!file) return; try { const rows = parseGuestsCsv(await file.text()).map((guest) => ({ ...guest, event_id: id })); if (rows.length > 500) throw new Error('Importa como máximo 500 invitados por archivo.'); await createGuests(rows); guestState.page = 1; showToast(`${rows.length} invitados importados.`, 'success'); await refreshGuests() } catch (cause) { showToast(cause.message, 'error') } finally { changeEvent.target.value = '' } })
   await refreshGuests()

@@ -17,6 +17,8 @@ La RPC `issue_guest_invitation` genera 32 bytes aleatorios en PostgreSQL, guarda
 
 La invitación pública llama a `get_public_invitation(token)`, que compara el hash y devuelve exclusivamente los datos necesarios de ese invitado y evento. Abrirla nunca cambia `archived`.
 
+Cada invitado incluye `party_size`, un entero entre 1 y 99 que indica cuántas personas cubre el pase. El valor predeterminado es 1, se administra junto con los datos del invitado y se expone públicamente solamente dentro de su propia invitación mediante la RPC protegida por token.
+
 ## Check-in
 
 El lector separa dos operaciones:

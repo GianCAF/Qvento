@@ -118,9 +118,13 @@ export async function invitationPage(token) {
 
   const pass = scene('Entrada digital', data.guest_name)
   pass.parentElement.classList.add('qr-scene')
+  const partySize = Number.isInteger(Number(data.party_size)) ? Number(data.party_size) : 1
+  const capacity = document.createElement('p')
+  capacity.className = 'pass-capacity'
+  capacity.textContent = `Pase válido para ${partySize} ${partySize === 1 ? 'persona' : 'personas'}`
   const canvas = document.createElement('canvas')
   canvas.className = 'qr-canvas'
-  pass.append(canvas)
+  pass.append(capacity, canvas)
   await renderQr(canvas, invitationUrl(token))
 
   const scenes = [...track.querySelectorAll('.invitation-scene')]

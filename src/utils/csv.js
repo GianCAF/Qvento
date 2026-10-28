@@ -18,6 +18,8 @@ export function parseGuestsCsv(text) {
   return lines.slice(1).map(parseLine).map((cells, row) => {
     const record = Object.fromEntries(headers.map((header, index) => [header, cells[index]?.trim() || null]))
     if (!record.full_name) throw new Error(`Falta el nombre en la fila ${row + 2}.`)
-    return { full_name: record.full_name, email: record.email, phone: record.phone }
+    const partySize = record.party_size == null ? 1 : Number(record.party_size)
+    if (!Number.isInteger(partySize) || partySize < 1 || partySize > 99) throw new Error(`La cantidad de personas de la fila ${row + 2} debe estar entre 1 y 99.`)
+    return { full_name: record.full_name, email: record.email, phone: record.phone, party_size: partySize }
   })
 }
