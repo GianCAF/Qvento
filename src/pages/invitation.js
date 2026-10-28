@@ -49,6 +49,9 @@ export async function invitationPage(token) {
   const main = document.createElement('main')
   main.className = 'invitation-shell min-h-screen overflow-hidden'
   const theme = applyTheme(main, data.invitation_theme)
+  applyTheme(document.documentElement, theme)
+  document.documentElement.classList.add('invitation-page-root')
+  document.body.classList.add('invitation-page')
 
   const track = document.createElement('div')
   track.className = 'scene-track'

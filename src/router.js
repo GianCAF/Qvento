@@ -35,6 +35,9 @@ const routes = [
 export function navigate(path) { history.pushState({}, '', path); renderRoute() }
 
 export async function renderRoute() {
+  document.documentElement.classList.remove('invitation-page-root', 'has-animated-background')
+  document.documentElement.removeAttribute('data-animation-style')
+  document.body.classList.remove('invitation-page')
   app.replaceChildren(); app.className = ''
   const loading = document.createElement('div'); loading.className = 'min-h-screen grid place-items-center bg-ink text-white'; loading.textContent = 'Cargando Qvento…'; app.append(loading)
   const route = routes.find((candidate) => candidate.pattern.test(location.pathname))
