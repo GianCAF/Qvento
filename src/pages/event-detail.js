@@ -6,6 +6,7 @@ import { applyTheme, buildBackgroundDesign, sanitizeTheme } from '../utils/theme
 import { invitationUrl } from '../utils/qr-utils.js'
 import { requiredText, optionalText } from '../utils/validators.js'
 import { parseGuestsCsv } from '../utils/csv.js'
+import { renderDropCap } from '../utils/editorial-text.js'
 import { createModal } from '../components/modal.js'
 import { renderQr, downloadQr } from '../components/qr-generator.js'
 import { showToast } from '../components/toast.js'
@@ -190,12 +191,17 @@ export async function eventDetailPage(id) {
   colors.before(backgroundControls.element)
   const preview = document.createElement('div'); preview.className = 'invitation-shell invitation-preview'
   const previewScene = document.createElement('div'); previewScene.className = 'invitation-preview-scene'
-  const previewCard = document.createElement('div'); previewCard.className = 'invitation-preview-card'
-  const previewEyebrow = document.createElement('p'); previewEyebrow.className = 'scene-eyebrow'; previewEyebrow.textContent = 'Vista previa'
-  const previewTitle = document.createElement('h3'); previewTitle.textContent = event.event_name
+  const previewCard = document.createElement('div'); previewCard.className = 'invitation-preview-card message-card'
+  const previewEyebrow = document.createElement('p'); previewEyebrow.className = 'scene-eyebrow'; previewEyebrow.textContent = 'Pase personal de honor'
+  const previewHonoree = document.createElement('p'); previewHonoree.className = 'scene-honoree'; previewHonoree.textContent = 'Invitado'
+  const previewTitle = document.createElement('h3'); previewTitle.className = 'editorial-title'
+  const previewTitleTop = document.createElement('span'); previewTitleTop.textContent = 'Tenemos algo'
+  const previewTitleBottom = document.createElement('span'); previewTitleBottom.textContent = 'que celebrar'
+  previewTitle.append(previewTitleTop, previewTitleBottom)
+  const previewDivider = document.createElement('span'); previewDivider.className = 'scene-divider'; previewDivider.setAttribute('aria-hidden', 'true')
   const previewCopy = document.createElement('p'); previewCopy.className = 'preview-copy'
-  previewCard.append(previewEyebrow, previewTitle, previewCopy); previewScene.append(previewCard); preview.append(previewScene)
-  const updatePreview = () => { backgroundControls.sync(); applyTheme(preview, Object.fromEntries(new FormData(themeForm))); previewCopy.textContent = renderInvitationMessage(themeForm.invitation_message.value, invitationVariables(event, 'Invitado')) }
+  previewCard.append(previewEyebrow, previewHonoree, previewTitle, previewDivider, previewCopy); previewScene.append(previewCard); preview.append(previewScene)
+  const updatePreview = () => { backgroundControls.sync(); applyTheme(preview, Object.fromEntries(new FormData(themeForm))); renderDropCap(previewCopy, renderInvitationMessage(themeForm.invitation_message.value, invitationVariables(event, 'Invitado'))) }
   themeForm.addEventListener('input', updatePreview); designCard.querySelector('[data-restore]').addEventListener('click', () => { themeForm.invitation_message.value = DEFAULT_INVITATION_MESSAGE; updatePreview() })
   openPreview.addEventListener('click', () => {
     updatePreview()

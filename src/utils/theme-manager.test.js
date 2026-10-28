@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildBackgroundDesign, sanitizeTheme } from './theme-manager.js'
+import { buildBackgroundDesign, pickStrongestBackgroundColor, sanitizeTheme } from './theme-manager.js'
 
 describe('sanitizeTheme', () => {
   it('acepta hexadecimal y reemplaza valores peligrosos', () => {
@@ -23,6 +23,14 @@ describe('sanitizeTheme', () => {
     const theme = sanitizeTheme({ background_style: 'url(javascript:1)', background_color_1: 'red' })
     expect(theme.background_style).toBe('watercolor')
     expect(theme.background_color_1).toBe('#FFF1F2')
+  })
+
+  it('selecciona el color de fondo con mayor intensidad para la letra capitular', () => {
+    expect(pickStrongestBackgroundColor({
+      background_color_1: '#FFF8F5',
+      background_color_2: '#E8D8D0',
+      background_color_3: '#9F3A52',
+    })).toBe('#9F3A52')
   })
 })
 

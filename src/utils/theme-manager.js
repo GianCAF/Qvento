@@ -10,6 +10,18 @@ const PROPERTY_MAP = {
 const BACKGROUND_COLOR_KEYS = ['background_color_1', 'background_color_2', 'background_color_3']
 const BACKGROUND_STYLES = new Set(BACKGROUND_PRESETS.map(({ value }) => value))
 
+function colorStrength(hex) {
+  const channels = hex.slice(1).match(/.{2}/g).map((channel) => Number.parseInt(channel, 16))
+  const chroma = Math.max(...channels) - Math.min(...channels)
+  const brightness = channels.reduce((total, channel) => total + channel, 0) / channels.length
+  return (chroma * 3) + ((255 - brightness) * .18)
+}
+
+export function pickStrongestBackgroundColor(theme) {
+  const safe = BACKGROUND_COLOR_KEYS.map((key) => isHexColor(theme[key]) ? theme[key].toUpperCase() : DEFAULT_THEME[key])
+  return safe.reduce((strongest, color) => colorStrength(color) > colorStrength(strongest) ? color : strongest)
+}
+
 export function buildBackgroundDesign(theme) {
   const c1 = theme.background_color_1
   const c2 = theme.background_color_2
@@ -47,6 +59,7 @@ export function applyTheme(element, theme) {
   const safe = sanitizeTheme(theme)
   Object.entries(PROPERTY_MAP).forEach(([key, property]) => element.style.setProperty(property, safe[key]))
   element.style.setProperty('--qv-background-design', buildBackgroundDesign(safe))
+  element.style.setProperty('--qv-background-accent', pickStrongestBackgroundColor(safe))
   return safe
 }
 

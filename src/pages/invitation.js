@@ -4,6 +4,7 @@ import { applyTheme } from '../utils/theme-manager.js'
 import { invitationUrl } from '../utils/qr-utils.js'
 import { renderQr } from '../components/qr-generator.js'
 import { DEFAULT_INVITATION_MESSAGE } from '../config.js'
+import { renderDropCap } from '../utils/editorial-text.js'
 
 function createArrowButton(direction) {
   const gradientId = `scene-arrow-gradient-${direction}`
@@ -24,6 +25,20 @@ function createArrowButton(direction) {
       <path stroke="url(#${gradientId})" d="m13 42 21-19M13 42l23 16" />
     </svg>`
   return button
+}
+
+function getInitials(name) {
+  const words = String(name).trim().split(/\s+/).filter(Boolean)
+  return `${words[0]?.[0] ?? ''}${words.at(-1)?.[0] ?? ''}`.toUpperCase()
+}
+
+function applyEditorialTitle(heading) {
+  heading.classList.add('editorial-title')
+  const firstLine = document.createElement('span')
+  firstLine.textContent = 'Tenemos algo'
+  const secondLine = document.createElement('span')
+  secondLine.textContent = 'que celebrar'
+  heading.replaceChildren(firstLine, secondLine)
 }
 
 export async function invitationPage(token) {
@@ -60,13 +75,30 @@ export async function invitationPage(token) {
   celebrant.textContent = `Acompaña a ${data.celebrant_name} en un día inolvidable.`
   welcome.append(celebrant)
 
-  const message = scene(`Para ${data.guest_name}`, 'Tenemos algo que celebrar')
+  const message = scene('Pase personal de honor', 'Tenemos algo que celebrar')
+  message.classList.add('message-card')
+  message.parentElement.classList.add('message-scene')
+  const messageHeading = message.querySelector('h1')
+  applyEditorialTitle(messageHeading)
+  const monogram = document.createElement('span')
+  monogram.className = 'scene-monogram'
+  monogram.setAttribute('aria-hidden', 'true')
+  monogram.textContent = getInitials(data.celebrant_name)
+  const honoree = document.createElement('p')
+  honoree.className = 'scene-honoree'
+  honoree.textContent = data.guest_name
+  const divider = document.createElement('span')
+  divider.className = 'scene-divider'
+  divider.setAttribute('aria-hidden', 'true')
+  message.prepend(monogram)
+  messageHeading.before(honoree)
+  messageHeading.after(divider)
   const copy = document.createElement('p')
   copy.className = 'scene-copy'
-  copy.textContent = renderInvitationMessage(
+  renderDropCap(copy, renderInvitationMessage(
     data.invitation_message || DEFAULT_INVITATION_MESSAGE,
     invitationVariables(data, data.guest_name),
-  )
+  ))
   message.append(copy)
 
   const eventDate = new Date(data.event_date)
@@ -92,6 +124,11 @@ export async function invitationPage(token) {
   const scenes = [...track.querySelectorAll('.invitation-scene')]
   const previous = createArrowButton('previous')
   const next = createArrowButton('next')
+  const navigation = document.createElement('nav')
+  navigation.className = 'scene-navigation'
+  navigation.setAttribute('aria-label', 'Secciones de la invitación')
+  const progress = document.createElement('span')
+  progress.className = 'scene-progress'
   let current = 0
   let transitioning = false
   let transitionFallback
@@ -100,6 +137,7 @@ export async function invitationPage(token) {
     track.style.transform = `translateX(-${current * 100}%)`
     previous.hidden = current === 0
     next.hidden = current === scenes.length - 1
+    progress.textContent = `${current + 1} / ${scenes.length}`
     window.requestAnimationFrame(() => {
       track.style.height = `${scenes[current].scrollHeight}px`
     })
@@ -142,7 +180,8 @@ export async function invitationPage(token) {
 
   const resizeObserver = new ResizeObserver(update)
   scenes.forEach((item) => resizeObserver.observe(item))
-  main.append(previous, next)
+  navigation.append(previous, progress, next)
+  main.append(navigation)
   update()
   return main
 }
