@@ -1,0 +1,12 @@
+.invitation-shell {
+  --qv-primary: #d946ef;
+  --qv-secondary: #f9a8d4;
+  --qv-background: #fff1f2;
+  --qv-text: #1f2937;
+  --qv-title: #701a75;
+  --qv-button: #be185d;
+  --qv-qr-background: #fff1f2;
+  --qv-qr-card: #ffffff;
+  background: var(--qv-background); color: var(--qv-text);
+}
+
