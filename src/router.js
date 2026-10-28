@@ -10,6 +10,7 @@ import { resetPasswordPage } from './pages/reset-password.js'
 import { createAppShell } from './components/app-shell.js'
 import { getCurrentProfile } from './services/auth.js'
 import { isSupabaseConfigured } from './services/supabase.js'
+import { clearDynamicImportRecovery, isDynamicImportFailure, reloadAfterDynamicImportFailure } from './utils/chunk-recovery.js'
 
 const app = document.querySelector('#app')
 
@@ -49,8 +50,15 @@ export async function renderRoute() {
     const match = location.pathname.match(route.pattern)
     const content = await route.page(profile, match)
     app.replaceChildren(profile ? createAppShell(profile, content) : content)
+    clearDynamicImportRecovery()
     window.scrollTo({ top: 0, behavior: 'instant' })
-  } catch (cause) { app.replaceChildren(errorPage('No pudimos cargar esta sección', cause.message)) }
+  } catch (cause) {
+    if (reloadAfterDynamicImportFailure(cause)) return
+    const detail = isDynamicImportFailure(cause)
+      ? 'La aplicación se actualizó mientras estaba abierta. Recarga la página para obtener la versión más reciente.'
+      : cause.message
+    app.replaceChildren(errorPage('No pudimos cargar esta sección', detail))
+  }
 }
 
 document.addEventListener('click', (event) => { const link = event.target.closest('a[data-link]'); if (!link || event.ctrlKey || event.metaKey || link.target === '_blank') return; event.preventDefault(); navigate(link.getAttribute('href')) })
