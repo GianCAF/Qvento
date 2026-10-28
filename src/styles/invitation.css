@@ -85,7 +85,7 @@
 }
 
 @media (max-width: 560px) {
-  .invitation-shell { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); background-attachment: fixed; }
+  .invitation-shell { background-attachment: fixed; }
   .invitation-scene { padding: 1rem .55rem 6.5rem; background-attachment: fixed; }
   .scene-card { width: calc(100% - .65rem); border-radius: 1rem; padding: 2.35rem 1.3rem 2rem; background: color-mix(in srgb, var(--qv-qr-card), transparent 16%); box-shadow: 0 18px 45px color-mix(in srgb, var(--qv-primary), transparent 82%); }
   .scene-card::before { inset: .42rem; border-radius: .72rem; }
