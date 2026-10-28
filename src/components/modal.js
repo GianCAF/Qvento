@@ -1,6 +1,6 @@
-export function createModal({ title, content, confirmLabel = 'Confirmar', onConfirm }) {
+export function createModal({ title, content, confirmLabel = 'Confirmar', onConfirm, dialogClass = '' }) {
   const dialog = document.createElement('dialog')
-  dialog.className = 'modal-card'
+  dialog.className = `modal-card ${dialogClass}`.trim()
   const heading = document.createElement('h2')
   heading.className = 'text-xl font-bold'
   heading.textContent = title

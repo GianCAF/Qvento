@@ -1,7 +1,20 @@
 import { requireSupabase, unwrap } from './supabase.js'
 
-export async function listGuests(eventId) {
-  return unwrap(await requireSupabase().from('guests').select('id, event_id, full_name, email, phone, archived, is_revoked, checked_in_at, checked_in_by, created_at').eq('event_id', eventId).order('created_at', { ascending: false }))
+export async function listGuests(eventId, options = {}) {
+  const pageSize = [10, 25].includes(Number(options.pageSize)) ? Number(options.pageSize) : 10
+  const page = Math.max(1, Number(options.page) || 1)
+  const from = (page - 1) * pageSize
+  const search = String(options.search ?? '').trim().replace(/[\\%_]/g, '\\$&')
+  let query = requireSupabase()
+    .from('guests')
+    .select('id, event_id, full_name, email, phone, archived, is_revoked, checked_in_at, checked_in_by, created_at', { count: 'exact' })
+    .eq('event_id', eventId)
+    .order('full_name', { ascending: options.sort !== 'desc' })
+    .range(from, from + pageSize - 1)
+  if (search) query = query.ilike('full_name', `%${search}%`)
+  const { data, error, count } = await query
+  if (error) throw new Error(error.message)
+  return { guests: data ?? [], total: count ?? 0, page, pageSize }
 }
 
 export async function createGuest(payload) {
