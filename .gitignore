@@ -5,6 +5,7 @@ dist/
 !.env.example
 .vercel/
 coverage/
+.vitest-temp/
 *.log
 .DS_Store
 Thumbs.db

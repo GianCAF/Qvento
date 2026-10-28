@@ -1,0 +1,10 @@
+import { adminSummary, latestCheckIns } from '../services/statistics.js'
+
+export async function statisticsPage() {
+  const section = document.createElement('section')
+  section.innerHTML = `<div class="page-heading"><div><p class="kicker">Asistencia</p><h1>Estadísticas</h1><p>Un resumen de invitaciones e ingresos confirmados.</p></div></div>`
+  const stats = await adminSummary(); const grid = document.createElement('div'); grid.className = 'metric-grid mt-8'
+  ;[['Total de invitados', stats.guests], ['Disponibles', stats.available], ['Utilizadas', stats.used], ['Revocadas', stats.revoked], ['Asistencia', `${stats.attendance}%`]].forEach(([label, value]) => { const card = document.createElement('article'); card.className = 'metric-card'; const name = document.createElement('p'); name.className = 'text-sm text-slate-500'; name.textContent = label; const number = document.createElement('p'); number.className = 'mt-3 text-4xl font-bold'; number.textContent = value; card.append(name, number); grid.append(card) }); section.append(grid)
+  const latest = document.createElement('article'); latest.className = 'card mt-6'; const title = document.createElement('h2'); title.className = 'text-xl font-bold'; title.textContent = 'Últimos ingresos'; const list = document.createElement('div'); list.className = 'mt-5 grid gap-3'; const logs = await latestCheckIns(); logs.forEach((log) => { const row = document.createElement('div'); row.className = 'list-row'; const name = document.createElement('p'); name.textContent = log.guests?.full_name || 'Invitado'; const meta = document.createElement('p'); meta.className = 'text-sm text-slate-500'; meta.textContent = `${new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(log.created_at))} · ${log.profiles?.full_name || 'Recepción'}`; row.append(name, meta); list.append(row) }); if (!logs.length) { const empty = document.createElement('p'); empty.className = 'empty-state'; empty.textContent = 'Aún no hay ingresos confirmados.'; list.append(empty) } latest.append(title, list); section.append(latest); return section
+}
+

@@ -9,4 +9,13 @@
   --qv-qr-card: #ffffff;
   background: var(--qv-background); color: var(--qv-text);
 }
+.scene-track { width: 100%; min-height: 100vh; display: flex; transition: transform .7s cubic-bezier(.22,.8,.24,1); }
+.invitation-scene { flex: 0 0 100%; min-height: 100vh; display: grid; place-items: center; padding: 5rem 1.25rem 8rem; background: radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--qv-secondary), transparent 30%), transparent 35%), var(--qv-background); }
+.scene-card { width: min(43rem, 100%); border: 1px solid color-mix(in srgb, var(--qv-primary), transparent 70%); border-radius: 2rem; padding: clamp(2rem, 7vw, 5rem); background: color-mix(in srgb, var(--qv-qr-card), transparent 8%); box-shadow: 0 28px 80px color-mix(in srgb, var(--qv-primary), transparent 75%); text-align: center; animation: rise .7s ease both; }
+.scene-card h1 { color: var(--qv-title); font-size: clamp(2.5rem, 8vw, 5.5rem); line-height: .95; font-weight: 800; letter-spacing: -.05em; }
+.scene-eyebrow { margin-bottom: 1rem; color: var(--qv-primary); font-size: .72rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+.scene-copy { margin: 1.5rem auto 0; max-width: 34rem; font-size: clamp(1rem, 2.5vw, 1.3rem); line-height: 1.8; white-space: pre-line; }
+.qr-scene { background: var(--qv-qr-background); }
+.qr-canvas { display: block; width: min(17rem, 80vw) !important; height: auto !important; margin: 2rem auto; border: .8rem solid white; border-radius: 1rem; }
+.scene-nav { position: fixed; left: 50%; bottom: 1.25rem; z-index: 20; display: flex; gap: .6rem; transform: translateX(-50%); border: 1px solid rgb(255 255 255 / .5); border-radius: 999px; padding: .5rem; background: rgb(255 255 255 / .78); box-shadow: 0 12px 35px rgb(15 23 42 / .16); backdrop-filter: blur(12px); }
 

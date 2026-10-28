@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "cross-env TEMP=.vitest-temp TMP=.vitest-temp TMPDIR=.vitest-temp vitest run",
+    "test:watch": "cross-env TEMP=.vitest-temp TMP=.vitest-temp TMPDIR=.vitest-temp vitest"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "cross-env": "^10.1.0",
     "jsdom": "^27.0.1",
     "tailwindcss": "^4.1.16",
     "vite": "^7.1.12",
