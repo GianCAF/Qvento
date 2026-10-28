@@ -1,4 +1,4 @@
-import { BACKGROUND_PRESETS, DEFAULT_THEME } from '../config.js'
+import { ANIMATED_BACKGROUND_PRESETS, BACKGROUND_PRESETS, DEFAULT_THEME } from '../config.js'
 import { isHexColor } from './validators.js'
 
 const PROPERTY_MAP = {
@@ -8,7 +8,9 @@ const PROPERTY_MAP = {
 }
 
 const BACKGROUND_COLOR_KEYS = ['background_color_1', 'background_color_2', 'background_color_3']
+const ANIMATION_COLOR_KEYS = ['animation_background_color', 'animation_color_1', 'animation_color_2']
 const BACKGROUND_STYLES = new Set(BACKGROUND_PRESETS.map(({ value }) => value))
+const ANIMATION_STYLES = new Set(ANIMATED_BACKGROUND_PRESETS.map(({ value }) => value))
 
 function colorStrength(hex) {
   const channels = hex.slice(1).match(/.{2}/g).map((channel) => Number.parseInt(channel, 16))
@@ -17,9 +19,13 @@ function colorStrength(hex) {
   return (chroma * 3) + ((255 - brightness) * .18)
 }
 
+function pickStrongestColor(colors) {
+  return colors.reduce((strongest, color) => colorStrength(color) > colorStrength(strongest) ? color : strongest)
+}
+
 export function pickStrongestBackgroundColor(theme) {
   const safe = BACKGROUND_COLOR_KEYS.map((key) => isHexColor(theme[key]) ? theme[key].toUpperCase() : DEFAULT_THEME[key])
-  return safe.reduce((strongest, color) => colorStrength(color) > colorStrength(strongest) ? color : strongest)
+  return pickStrongestColor(safe)
 }
 
 export function buildBackgroundDesign(theme) {
@@ -52,6 +58,10 @@ export function sanitizeTheme(theme = {}) {
       : isHexColor(legacyFallback) ? legacyFallback.toUpperCase() : DEFAULT_THEME[key]
   })
   safe.background_color = safe.background_color_1
+  safe.animation_style = ANIMATION_STYLES.has(theme.animation_style) ? theme.animation_style : DEFAULT_THEME.animation_style
+  ANIMATION_COLOR_KEYS.forEach((key) => {
+    safe[key] = isHexColor(theme[key]) ? theme[key].toUpperCase() : DEFAULT_THEME[key]
+  })
   return safe
 }
 
@@ -59,7 +69,15 @@ export function applyTheme(element, theme) {
   const safe = sanitizeTheme(theme)
   Object.entries(PROPERTY_MAP).forEach(([key, property]) => element.style.setProperty(property, safe[key]))
   element.style.setProperty('--qv-background-design', buildBackgroundDesign(safe))
-  element.style.setProperty('--qv-background-accent', pickStrongestBackgroundColor(safe))
+  const accentColor = safe.animation_style === 'none'
+    ? pickStrongestBackgroundColor(safe)
+    : pickStrongestColor([safe.animation_background_color, safe.animation_color_1, safe.animation_color_2])
+  element.style.setProperty('--qv-background-accent', accentColor)
+  element.style.setProperty('--qv-animation-background', safe.animation_background_color)
+  element.style.setProperty('--qv-animation-color-1', safe.animation_color_1)
+  element.style.setProperty('--qv-animation-color-2', safe.animation_color_2)
+  element.classList.toggle('has-animated-background', safe.animation_style !== 'none')
+  element.dataset.animationStyle = safe.animation_style
   return safe
 }
 

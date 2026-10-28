@@ -1,12 +1,13 @@
 import { getEvent, updateEvent } from '../services/events.js'
 import { createGuest, createGuests, issueInvitation, listGuests, updateGuest } from '../services/guests.js'
-import { BACKGROUND_PRESETS, DEFAULT_INVITATION_MESSAGE, THEME_FIELDS } from '../config.js'
+import { ANIMATED_BACKGROUND_PRESETS, BACKGROUND_PRESETS, DEFAULT_INVITATION_MESSAGE, THEME_FIELDS } from '../config.js'
 import { renderInvitationMessage, invitationVariables } from '../utils/template-engine.js'
 import { applyTheme, buildBackgroundDesign, sanitizeTheme } from '../utils/theme-manager.js'
 import { invitationUrl } from '../utils/qr-utils.js'
 import { requiredText, optionalText } from '../utils/validators.js'
 import { parseGuestsCsv } from '../utils/csv.js'
 import { renderDropCap } from '../utils/editorial-text.js'
+import { renderAnimatedBackground } from '../components/animated-background.js'
 import { createModal } from '../components/modal.js'
 import { renderQr, downloadQr } from '../components/qr-generator.js'
 import { showToast } from '../components/toast.js'
@@ -62,14 +63,15 @@ function createColorField(key, label, value) {
 }
 
 function createBackgroundControls(theme) {
-  const fieldset = document.createElement('fieldset')
-  fieldset.className = 'background-controls'
-  const legend = document.createElement('legend')
-  legend.className = 'text-lg font-bold'
-  legend.textContent = 'Diseño del fondo'
+  const details = document.createElement('details')
+  details.className = 'background-controls background-panel'
+  const summary = document.createElement('summary')
+  summary.textContent = 'Fondos neutros'
+  const content = document.createElement('div')
+  content.className = 'background-panel-content'
   const description = document.createElement('p')
-  description.className = 'mt-1 text-sm text-slate-500'
-  description.textContent = 'Elige un estilo y combina los colores que utiliza.'
+  description.className = 'text-sm text-slate-500'
+  description.textContent = 'Diseños estáticos con combinaciones de uno a tres colores.'
   const gallery = document.createElement('div')
   gallery.className = 'background-preset-grid mt-4'
 
@@ -104,7 +106,7 @@ function createBackgroundControls(theme) {
   hint.className = 'mt-3 text-xs font-semibold text-violet'
 
   const sync = () => {
-    const selected = BACKGROUND_PRESETS.find(({ value }) => fieldset.querySelector(`[name="background_style"][value="${value}"]`)?.checked) ?? BACKGROUND_PRESETS[1]
+    const selected = BACKGROUND_PRESETS.find(({ value }) => details.querySelector(`[name="background_style"][value="${value}"]`)?.checked) ?? BACKGROUND_PRESETS[1]
     colorFields.forEach((field, index) => { field.hidden = index >= selected.colors })
     hint.textContent = selected.colors === 1
       ? 'Este diseño utiliza un color.'
@@ -121,10 +123,80 @@ function createBackgroundControls(theme) {
     })
   }
 
-  fieldset.addEventListener('input', sync)
-  fieldset.append(legend, description, gallery, colorGrid, hint)
+  details.addEventListener('input', sync)
+  content.append(description, gallery, colorGrid, hint)
+  details.append(summary, content)
   sync()
-  return { element: fieldset, sync }
+  return { element: details, sync }
+}
+
+function createAnimatedBackgroundControls(theme) {
+  const details = document.createElement('details')
+  details.className = 'background-controls background-panel animated-background-panel'
+  const summary = document.createElement('summary')
+  summary.textContent = 'Fondos con animación'
+  const content = document.createElement('div')
+  content.className = 'background-panel-content'
+  const description = document.createElement('p')
+  description.className = 'text-sm text-slate-500'
+  description.textContent = 'Efectos decorativos ligeros que respetan la preferencia de movimiento del dispositivo.'
+  const gallery = document.createElement('div')
+  gallery.className = 'background-preset-grid mt-4'
+
+  const cards = ANIMATED_BACKGROUND_PRESETS.map((preset) => {
+    const card = document.createElement('label')
+    card.className = 'background-preset-card animated-preset-card'
+    const input = document.createElement('input')
+    input.type = 'radio'
+    input.name = 'animation_style'
+    input.value = preset.value
+    input.checked = preset.value === theme.animation_style
+    const swatch = document.createElement('span')
+    swatch.className = `background-preset-swatch animated-preset-swatch animated-swatch-${preset.value}`
+    const name = document.createElement('strong')
+    name.textContent = preset.label
+    const count = document.createElement('small')
+    count.textContent = preset.colors ? `${preset.colors} color${preset.colors > 1 ? 'es' : ''} de efecto` : 'Usar fondo neutro'
+    card.append(input, swatch, name, count)
+    gallery.append(card)
+    return { preset, swatch }
+  })
+
+  const colorGrid = document.createElement('div')
+  colorGrid.className = 'mt-4 grid gap-3 sm:grid-cols-3'
+  const backgroundField = createColorField('animation_background_color', 'Color de fondo', theme.animation_background_color)
+  const firstColorField = createColorField('animation_color_1', 'Color del efecto', theme.animation_color_1)
+  const secondColorField = createColorField('animation_color_2', 'Segundo color', theme.animation_color_2)
+  const colorFields = [backgroundField, firstColorField, secondColorField]
+  colorGrid.append(...colorFields)
+  const hint = document.createElement('p')
+  hint.className = 'mt-3 text-xs font-semibold text-violet'
+
+  const sync = () => {
+    const selected = ANIMATED_BACKGROUND_PRESETS.find(({ value }) => details.querySelector(`[name="animation_style"][value="${value}"]`)?.checked) ?? ANIMATED_BACKGROUND_PRESETS[0]
+    backgroundField.hidden = selected.value === 'none'
+    firstColorField.hidden = selected.colors === 0
+    secondColorField.hidden = selected.colors < 2
+    firstColorField.querySelector('span').textContent = selected.value === 'petals'
+      ? 'Color de pétalos'
+      : selected.value === 'stars' ? 'Color de estrellas' : selected.value === 'bloom' ? 'Color de flores' : 'Color del efecto 1'
+    secondColorField.querySelector('span').textContent = 'Color del efecto 2'
+    hint.textContent = selected.value === 'none'
+      ? 'La invitación utilizará el fondo neutro seleccionado.'
+      : `${selected.label} se aplicará sobre el color de fondo elegido.`
+    cards.forEach(({ preset, swatch }) => {
+      swatch.style.setProperty('--swatch-background', backgroundField.querySelector('input').value)
+      swatch.style.setProperty('--swatch-color-1', firstColorField.querySelector('input').value)
+      swatch.style.setProperty('--swatch-color-2', secondColorField.querySelector('input').value)
+      swatch.dataset.effect = preset.value
+    })
+  }
+
+  details.addEventListener('input', sync)
+  content.append(description, gallery, colorGrid, hint)
+  details.append(summary, content)
+  sync()
+  return { element: details, sync }
 }
 
 export async function eventDetailPage(id) {
@@ -188,7 +260,14 @@ export async function eventDetailPage(id) {
   const colors = designCard.querySelector('[data-colors]'); const theme = sanitizeTheme(event.invitation_theme)
   THEME_FIELDS.forEach(([key, label]) => colors.append(createColorField(key, label, theme[key])))
   const backgroundControls = createBackgroundControls(theme)
-  colors.before(backgroundControls.element)
+  const animatedBackgroundControls = createAnimatedBackgroundControls(theme)
+  colors.before(backgroundControls.element, animatedBackgroundControls.element)
+  backgroundControls.element.addEventListener('change', (changeEvent) => {
+    if (changeEvent.target.name !== 'background_style') return
+    const none = animatedBackgroundControls.element.querySelector('[name="animation_style"][value="none"]')
+    none.checked = true
+    none.dispatchEvent(new Event('input', { bubbles: true }))
+  })
   const preview = document.createElement('div'); preview.className = 'invitation-shell invitation-preview'
   const previewScene = document.createElement('div'); previewScene.className = 'invitation-preview-scene'
   const previewCard = document.createElement('div'); previewCard.className = 'invitation-preview-card message-card'
@@ -201,7 +280,13 @@ export async function eventDetailPage(id) {
   const previewDivider = document.createElement('span'); previewDivider.className = 'scene-divider'; previewDivider.setAttribute('aria-hidden', 'true')
   const previewCopy = document.createElement('p'); previewCopy.className = 'preview-copy'
   previewCard.append(previewEyebrow, previewHonoree, previewTitle, previewDivider, previewCopy); previewScene.append(previewCard); preview.append(previewScene)
-  const updatePreview = () => { backgroundControls.sync(); applyTheme(preview, Object.fromEntries(new FormData(themeForm))); renderDropCap(previewCopy, renderInvitationMessage(themeForm.invitation_message.value, invitationVariables(event, 'Invitado'))) }
+  const updatePreview = () => {
+    backgroundControls.sync()
+    animatedBackgroundControls.sync()
+    const safeTheme = applyTheme(preview, Object.fromEntries(new FormData(themeForm)))
+    renderAnimatedBackground(preview, safeTheme.animation_style)
+    renderDropCap(previewCopy, renderInvitationMessage(themeForm.invitation_message.value, invitationVariables(event, 'Invitado')))
+  }
   themeForm.addEventListener('input', updatePreview); designCard.querySelector('[data-restore]').addEventListener('click', () => { themeForm.invitation_message.value = DEFAULT_INVITATION_MESSAGE; updatePreview() })
   openPreview.addEventListener('click', () => {
     updatePreview()

@@ -32,5 +32,12 @@ describe('sanitizeTheme', () => {
       background_color_3: '#9F3A52',
     })).toBe('#9F3A52')
   })
+
+  it('acepta animaciones conocidas y sanea sus colores', () => {
+    const theme = sanitizeTheme({ animation_style: 'fireworks', animation_color_1: '#123abc' })
+    expect(theme.animation_style).toBe('fireworks')
+    expect(theme.animation_color_1).toBe('#123ABC')
+    expect(sanitizeTheme({ animation_style: 'url(javascript:1)' }).animation_style).toBe('none')
+  })
 })
 

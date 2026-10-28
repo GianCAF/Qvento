@@ -5,6 +5,7 @@ import { invitationUrl } from '../utils/qr-utils.js'
 import { renderQr } from '../components/qr-generator.js'
 import { DEFAULT_INVITATION_MESSAGE } from '../config.js'
 import { renderDropCap } from '../utils/editorial-text.js'
+import { renderAnimatedBackground } from '../components/animated-background.js'
 
 function createArrowButton(direction) {
   const gradientId = `scene-arrow-gradient-${direction}`
@@ -47,7 +48,7 @@ export async function invitationPage(token) {
 
   const main = document.createElement('main')
   main.className = 'invitation-shell min-h-screen overflow-hidden'
-  applyTheme(main, data.invitation_theme)
+  const theme = applyTheme(main, data.invitation_theme)
 
   const track = document.createElement('div')
   track.className = 'scene-track'
@@ -65,6 +66,7 @@ export async function invitationPage(token) {
     heading.textContent = title
     card.append(label, heading)
     section.append(card)
+    renderAnimatedBackground(section, theme.animation_style)
     track.append(section)
     return card
   }
