@@ -73,8 +73,11 @@ html.invitation-page-root.has-animated-background body {
 @keyframes qv-flower-open { 0%, 28% { transform: translate(-50%, -40%) rotate(45deg) scale(0); } 42%, 75% { transform: translate(-50%, -40%) rotate(45deg) scale(1); } 92%, 100% { transform: translate(-50%, -40%) rotate(45deg) scale(.4); } }
 
 .qr-scene { background-color: var(--qv-qr-background); background-image: var(--qv-background-design, none); }
+.dress-code { width: fit-content; max-width: 100%; margin: 1.5rem auto 0; border-block: 1px solid color-mix(in srgb, var(--qv-primary), transparent 68%); padding: .7rem 1rem; color: var(--qv-text); font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: clamp(.8rem, 1.8vw, .95rem); line-height: 1.5; }
+.dress-code strong { color: var(--qv-title); }
 .pass-capacity { width: fit-content; margin: 1.25rem auto 0; border: 1px solid color-mix(in srgb, var(--qv-primary), transparent 62%); border-radius: 999px; padding: .55rem 1rem; background: color-mix(in srgb, var(--qv-primary), transparent 90%); color: var(--qv-title); font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: clamp(.75rem, 1.8vw, .9rem); font-weight: 600; letter-spacing: .04em; }
 .qr-canvas { display: block; width: min(17rem, 80vw) !important; height: auto !important; margin: 2rem auto; border: .8rem solid white; border-radius: 1rem; }
+.pass-instruction { width: fit-content; max-width: 100%; margin: 0 auto; border: 1px solid color-mix(in srgb, var(--qv-primary), transparent 62%); border-radius: 999px; padding: .55rem 1rem; background: color-mix(in srgb, var(--qv-primary), transparent 90%); color: var(--qv-title); font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: clamp(.75rem, 1.8vw, .9rem); font-weight: 600; letter-spacing: .02em; }
 
 .scene-navigation { position: fixed; inset: 0; z-index: 20; pointer-events: none; transition: opacity .18s ease, visibility .18s ease; }
 .scene-progress { display: none; }

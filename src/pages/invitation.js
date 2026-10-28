@@ -118,6 +118,14 @@ export async function invitationPage(token) {
     description.textContent = data.event_description
     details.append(description)
   }
+  if (data.dress_code) {
+    const dressCode = document.createElement('p')
+    dressCode.className = 'dress-code'
+    const label = document.createElement('strong')
+    label.textContent = 'Código de vestimenta:'
+    dressCode.append(label, ` ${data.dress_code}`)
+    details.append(dressCode)
+  }
 
   const pass = scene('Entrada digital', data.guest_name)
   pass.parentElement.classList.add('qr-scene')
@@ -127,7 +135,10 @@ export async function invitationPage(token) {
   capacity.textContent = `Pase válido para ${partySize} ${partySize === 1 ? 'persona' : 'personas'}`
   const canvas = document.createElement('canvas')
   canvas.className = 'qr-canvas'
-  pass.append(capacity, canvas)
+  const instruction = document.createElement('p')
+  instruction.className = 'pass-instruction'
+  instruction.textContent = 'Presenta esta imagen en la entrada del salón.'
+  pass.append(capacity, canvas, instruction)
   await renderQr(canvas, invitationUrl(token))
 
   const scenes = [...track.querySelectorAll('.invitation-scene')]

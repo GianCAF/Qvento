@@ -259,8 +259,8 @@ export async function eventDetailPage(id) {
   await refreshGuests()
 
   const designCard = document.createElement('article'); designCard.className = 'card'
-  designCard.innerHTML = `<h2 class="text-2xl font-bold">Personalizar invitación</h2><p class="text-sm text-slate-500">Los cambios se muestran antes de guardarlos.</p><form class="mt-6 grid gap-5" data-theme-form><label class="field">Mensaje<textarea name="invitation_message" rows="5" maxlength="1500"></textarea></label><button type="button" class="justify-self-start text-sm font-bold text-violet" data-restore>Restaurar mensaje predeterminado</button><div class="grid grid-cols-2 gap-3" data-colors></div><button class="button-primary" type="submit">Guardar diseño</button></form>`
-  const themeForm = designCard.querySelector('form'); themeForm.invitation_message.value = event.invitation_message || DEFAULT_INVITATION_MESSAGE
+  designCard.innerHTML = `<h2 class="text-2xl font-bold">Personalizar invitación</h2><p class="text-sm text-slate-500">Los cambios se muestran antes de guardarlos.</p><form class="mt-6 grid gap-5" data-theme-form><label class="field">Código de vestimenta<input name="dress_code" maxlength="120" placeholder="Ej. Formal, coctel o tonos claros"></label><label class="field">Mensaje<textarea name="invitation_message" rows="5" maxlength="1500"></textarea></label><button type="button" class="justify-self-start text-sm font-bold text-violet" data-restore>Restaurar mensaje predeterminado</button><div class="grid grid-cols-2 gap-3" data-colors></div><button class="button-primary" type="submit">Guardar invitación</button></form>`
+  const themeForm = designCard.querySelector('form'); themeForm.invitation_message.value = event.invitation_message || DEFAULT_INVITATION_MESSAGE; themeForm.dress_code.value = event.dress_code || ''
   const colors = designCard.querySelector('[data-colors]'); const theme = sanitizeTheme(event.invitation_theme)
   THEME_FIELDS.forEach(([key, label]) => colors.append(createColorField(key, label, theme[key])))
   const backgroundControls = createBackgroundControls(theme)
@@ -296,7 +296,7 @@ export async function eventDetailPage(id) {
     updatePreview()
     createModal({ title: 'Previsualización de la invitación', content: preview, confirmLabel: 'Cerrar', dialogClass: 'preview-modal' })
   })
-  themeForm.addEventListener('submit', async (submitEvent) => { submitEvent.preventDefault(); try { const data = Object.fromEntries(new FormData(themeForm)); const invitation_message = data.invitation_message; delete data.invitation_message; await updateEvent(id, { invitation_message, invitation_theme: sanitizeTheme(data) }); showToast('Diseño guardado.', 'success') } catch (cause) { showToast(cause.message, 'error') } })
+  themeForm.addEventListener('submit', async (submitEvent) => { submitEvent.preventDefault(); try { const data = Object.fromEntries(new FormData(themeForm)); const invitation_message = optionalText(data.invitation_message, 1500); const dress_code = optionalText(data.dress_code, 120); delete data.invitation_message; delete data.dress_code; await updateEvent(id, { invitation_message, dress_code, invitation_theme: sanitizeTheme(data) }); showToast('Invitación guardada.', 'success') } catch (cause) { showToast(cause.message, 'error') } })
   updatePreview(); layout.append(guestsCard, designCard); return section
 }
 

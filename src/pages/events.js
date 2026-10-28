@@ -30,6 +30,7 @@ export function newEventPage() {
     <label class="field">Nombre del evento<input name="event_name" required maxlength="160"></label>
     <label class="field">Fecha y hora<input name="event_date" type="datetime-local" required></label>
     <label class="field">Dirección<input name="event_address" required maxlength="300"></label>
+    <label class="field lg:col-span-2">Código de vestimenta<input name="dress_code" maxlength="120" placeholder="Ej. Formal, coctel o tonos claros"></label>
     <label class="field lg:col-span-2">Descripción<textarea name="event_description" rows="3" maxlength="1000"></textarea></label>
     <label class="field lg:col-span-2">Mensaje de invitación<textarea name="invitation_message" rows="5" maxlength="1500"></textarea></label>
     <div class="lg:col-span-2 flex justify-end gap-3"><a class="button-secondary" href="/admin/eventos" data-link>Cancelar</a><button class="button-primary" type="submit">Crear evento</button></div>
@@ -43,7 +44,8 @@ export function newEventPage() {
       const created = await createEvent({
         celebrant_name: requiredText(data.celebrant_name, 'El festejado', 120), event_name: requiredText(data.event_name, 'El evento', 160),
         event_date: new Date(data.event_date).toISOString(), event_address: requiredText(data.event_address, 'La dirección', 300),
-        event_description: optionalText(data.event_description), invitation_message: optionalText(data.invitation_message, 1500) ?? DEFAULT_INVITATION_MESSAGE,
+        event_description: optionalText(data.event_description), dress_code: optionalText(data.dress_code, 120),
+        invitation_message: optionalText(data.invitation_message, 1500) ?? DEFAULT_INVITATION_MESSAGE,
         invitation_theme: DEFAULT_THEME,
       })
       showToast('Evento creado correctamente.', 'success'); navigate(`/admin/eventos/${created.id}`)
