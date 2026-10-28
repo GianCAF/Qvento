@@ -16,6 +16,22 @@
   font-family: "Cormorant Garamond", Georgia, serif;
 }
 
+html.invitation-page-root,
+html.invitation-page-root body {
+  min-height: 100%;
+  background-color: var(--qv-background);
+  background-image: var(--qv-background-design, none);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+html.invitation-page-root.has-animated-background,
+html.invitation-page-root.has-animated-background body {
+  background-color: var(--qv-animation-background);
+  background-image: none;
+}
+
 .scene-track { width: 100%; min-height: 100svh; display: flex; align-items: flex-start; transition: transform .7s cubic-bezier(.22,.8,.24,1), height .35s ease; }
 .invitation-scene { position: relative; flex: 0 0 100%; min-height: 100svh; display: grid; place-items: center; overflow: hidden; padding: clamp(1.5rem, 5vh, 4rem) clamp(1rem, 5vw, 6rem); background-color: var(--qv-background); background-image: var(--qv-background-design, none); background-position: center; background-size: cover; }
 .has-animated-background .invitation-scene { background-color: var(--qv-animation-background); background-image: none; }
