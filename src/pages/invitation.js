@@ -15,9 +15,9 @@ function createArrowButton(direction) {
     <svg viewBox="0 0 180 80" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="${gradientId}" x1="0" y1="0" x2="1" y2="0">
-          <stop class="arrow-stop-primary" offset="0%" />
-          <stop class="arrow-stop-secondary" offset="55%" />
-          <stop class="arrow-stop-background" offset="100%" />
+          <stop class="arrow-stop-primary-dark" offset="0%" />
+          <stop class="arrow-stop-primary" offset="52%" />
+          <stop class="arrow-stop-primary-light" offset="100%" />
         </linearGradient>
       </defs>
       <path stroke="url(#${gradientId})" d="M166 41c-31-29-57 27-95 4C52 33 35 28 13 42" />
