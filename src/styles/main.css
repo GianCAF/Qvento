@@ -64,7 +64,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .invitation-preview-card h3 { max-width: 100%; color: var(--qv-title); font-size: clamp(1.6rem, 5vw, 2.5rem); line-height: 1.05; font-weight: 800; overflow-wrap: anywhere; }
 .invitation-preview-card .scene-eyebrow { margin: 0; }
 .preview-copy { max-width: 26rem; margin: 0; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-line; }
-.preview-button { display: inline-flex; align-items: center; justify-content: center; margin-top: .25rem; border-radius: 999px; padding: .7rem 1rem; background: var(--qv-button); color: white; font-size: .8rem; font-weight: 800; }
 .guest-list-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 7rem 6rem; gap: .75rem; align-items: end; border-top: 1px solid #e2e8f0; padding-top: 1.25rem; }
 .guest-list-toolbar .field input, .guest-list-toolbar .field select { min-height: 2.75rem; }
 .guest-pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }

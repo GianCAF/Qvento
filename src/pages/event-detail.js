@@ -194,8 +194,7 @@ export async function eventDetailPage(id) {
   const previewEyebrow = document.createElement('p'); previewEyebrow.className = 'scene-eyebrow'; previewEyebrow.textContent = 'Vista previa'
   const previewTitle = document.createElement('h3'); previewTitle.textContent = event.event_name
   const previewCopy = document.createElement('p'); previewCopy.className = 'preview-copy'
-  const previewButton = document.createElement('span'); previewButton.className = 'preview-button'; previewButton.textContent = 'Ver mi entrada'
-  previewCard.append(previewEyebrow, previewTitle, previewCopy, previewButton); previewScene.append(previewCard); preview.append(previewScene)
+  previewCard.append(previewEyebrow, previewTitle, previewCopy); previewScene.append(previewCard); preview.append(previewScene)
   const updatePreview = () => { backgroundControls.sync(); applyTheme(preview, Object.fromEntries(new FormData(themeForm))); previewCopy.textContent = renderInvitationMessage(themeForm.invitation_message.value, invitationVariables(event, 'Invitado')) }
   themeForm.addEventListener('input', updatePreview); designCard.querySelector('[data-restore]').addEventListener('click', () => { themeForm.invitation_message.value = DEFAULT_INVITATION_MESSAGE; updatePreview() })
   openPreview.addEventListener('click', () => {
